@@ -19,7 +19,9 @@ services:
     cap_add:
       - IPC_LOCK
     volumes:
-      - es-nht:/usr/share/elasticsearch/data
+      - type: bind
+        source: es-nht/
+        target: /usr/share/elasticsearch/data
     ports:
       - 9200:9200
       - 9300:9300
@@ -38,8 +40,7 @@ services:
       - elasticsearch
     networks:
       - elastic
-    environment:
-      - XPACK_MONITORING_ENABLED=false
+    environment: []      
     entrypoint: ["/bin/bash", "-c"]
 
     # Add a `sleep 3000 &&` for debugging -- remove it while running docker-compose
@@ -74,12 +75,17 @@ services:
   #   networks:
   #     - filebeat
 
-volumes:
-  es-nht:
-    driver: local
+# volumes:
+#   es-nht:
+#     driver: local
 
 networks:
   elastic:
     driver: bridge
   filebeat:
     driver: bridge
+
+
+# note on logstash config: 
+# 1. Be careful while setting delimiter as it causes problems while parsing files (default value is "\n" which is good enough for most cases)
+# 2. The `sincedb_path` parameter trakcs which was the last point at which reading was done from the file. Setting it to `sincedb_path => "/dev/null"` ensures that everytime file is read afresh (which is useful incase of debugging or in cases  like deleting the index from ES & wanting the data to be re-populated)
