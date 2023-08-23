@@ -1,0 +1,56 @@
+{
+    "source": "nginx",
+    "time": 1658188800011,
+    "resp_body_size": 13615,
+    "host": "api.company.com",
+    "address": "192.20.0.1",
+    "request_length": 482,
+    "method": "POST",
+    "uri": "/service/route?variant=default",
+    "status": 200,
+    "user_agent": "Apache-HttpClient/4.5.1 (Java/11.0.15)",
+    "resp_time": 0.042,
+    "upstream_addr": "10.0.0.20:80"
+}
+{
+    "source": "nginx",
+    "time": 1658188800011,
+    "resp_body_size": 23615,
+    "host": "api.company.com",
+    "address": "192.20.0.1",
+    "request_length": 482,
+    "method": "POST",
+    "uri": "/service/route?variant=secure",
+    "status": 200,
+    "user_agent": "Apache-HttpClient/4.5.1 (Java/11.0.15)",
+    "resp_time": 0.042,
+    "upstream_addr": "10.0.0.20:80"
+}
+{
+    "source": "nginx",
+    "time": 1658188800011,
+    "resp_body_size": 23345,
+    "host": "api.company.com",
+    "address": "192.20.22.4",
+    "request_length": 280,
+    "method": "POST",
+    "uri": "/service/auth?variant=default",
+    "status": 200,
+    "user_agent": "Apache-HttpClient/4.5.1 (Java/11.0.15)",
+    "resp_time": 0.042,
+    "upstream_addr": "10.0.0.20:80"
+}
+{
+    "source": "nginx",
+    "time": 1658188800011,
+    "resp_body_size": 23345,
+    "host": "api.company.com",
+    "address": "192.20.24.1",
+    "request_length": 280,
+    "method": "POST",
+    "uri": "/service/auth?variant=default",
+    "status": 403,
+    "user_agent": "Apache-HttpClient/4.5.1 (Java/11.0.15)",
+    "resp_time": 0.042,
+    "upstream_addr": "10.0.0.20:80"
+}

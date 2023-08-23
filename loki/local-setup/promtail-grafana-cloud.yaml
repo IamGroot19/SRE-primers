@@ -1,0 +1,83 @@
+server:
+  http_listen_address: 127.0.0.1
+  http_listen_port: 9080
+  grpc_listen_port: 9081
+        
+positions:
+  filename: /tmp/positions.yaml
+        
+clients:
+  - url: ""
+    tenant_id: bharath-tpx13-poc
+
+scrape_configs:
+- job_name: tpx13-file-sd
+  static_configs:
+  - labels:
+      job: sample-apache-accesslog-1
+      host: tpx13
+      __path__: ~/Documents/apache-logs-small
+  - labels:
+      job: sample-apache-accesslog-2
+      host: tpx13
+      __path__: /tmp/apache-logs-small
+  - labels:
+      job: logfmt-eg
+      host: tpx13
+      __path__: /tmp/logfmt-example-loki-QFE.txt
+  - labels:
+      job: nginx-json
+      host: tpx13
+      __path__: /tmp/nginx-access.log
+
+
+- job_name: tpx13-systemd-journal-sd
+  journal:
+    json: false
+    path: /var/log/journal
+    max_age: 1h
+    labels:
+      job: systemd-services-journal-sd
+      host: tpx13
+  relabel_configs:
+  - source_labels: ['__journal__systemd_unit']
+    target_label: 'unit'
+  - source_labels: ['__journal__hostname']
+    target_label: 'hostname'
+
+- job_name: tpx13-systemd-static-sd
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: systemd-services-static-sd
+      host: tpx13
+      __path__: /var/log/*.log
+  relabel_configs:
+  - source_labels: ['__journal__systemd_unit']
+    target_label: 'unit'
+  - source_labels: ['__journal__hostname']
+    target_label: 'hostname'
+
+- job_name: docker-new
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: docker-new
+      host: tpx13
+      __path__: /var/lib/docker/containers/*/*-json.log
+
+# ## NOTE: This wont work when running promtail inside a container since there's no docker daemon inside the container
+# - job_name: tpx13-docker-sd
+#   docker_sd_configs:
+#   - host: unix:///var/run/docker.sock
+#     refresh_interval: 5s
+#   relabel_configs:
+#   - source_labels: [__meta_docker_container_name]
+#     regex: '/(.*)'
+#     target_label:  container_name
+#   - source_labels: [__meta_docker_network_name]
+#     target_label: docker_network_name
+  
+

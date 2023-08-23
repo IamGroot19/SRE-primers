@@ -1,0 +1,23 @@
+server:
+  http_listen_address: 127.0.0.1
+  http_listen_port: 9072
+  grpc_listen_port: 9082
+        
+positions:
+  filename: /tmp/positions-promtail-systemd.yaml
+        
+clients:
+  - url: ""
+    tenant_id: bharath-tpx13-poc
+
+scrape_configs:
+- job_name: tpx13-docker-sd
+  docker_sd_configs:
+  - host: unix:///var/run/docker.sock
+    refresh_interval: 5s
+  relabel_configs:
+  - source_labels: [__meta_docker_container_name]
+    regex: '/(.*)'
+    target_label:  container_name
+  - source_labels: [__meta_docker_network_name]
+    target_label: docker_network_name
