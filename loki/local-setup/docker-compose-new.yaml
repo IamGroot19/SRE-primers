@@ -1,0 +1,102 @@
+version: "3.2"
+
+networks:
+  loki-network:
+    name: loki-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "172.22.22.0/24"
+
+services:
+  loki:
+    image: grafana/loki:2.8.0
+    # network_mode: "host"
+    command: [ "-config.file=/etc/loki/local-config.yaml", "-log.level=debug"]
+    volumes:
+      - type: bind 
+        source: ./loki-config.yaml
+        target: /etc/loki/local-config.yaml
+      - type: volume
+        source: loki-data
+        target: /loki
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://172.22.22.221:3100/loki/api/v1/push"
+        # loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-external-labels: "container_name={{.Name}},job=dockerlogs"
+    networks:
+      loki-network:
+        ipv4_address: "172.22.22.221"
+
+  promtail:
+    depends_on:
+      - loki
+    image: grafana/promtail:2.8.0
+    # network_mode: "host"
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    logging:
+      driver: loki
+      options:
+        # loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-url: "http://172.22.22.221:3100/loki/api/v1/push"
+        loki-external-labels: "container_name={{.Name}},job=dockerlogs"
+    networks:
+      loki-network: {}
+
+  grafana:
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy 
+          orgId: 1
+          url: http://127.0.0.1:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: false
+        EOF
+        /run.sh
+    image: grafana/grafana:9.1.0
+    # network_mode: "host"
+    ports:
+      - "3000:3000"
+    networks: 
+      loki-network: {}
+  
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    volumes:
+      - type: bind 
+        source: ./prometheus.yaml
+        target: /etc/prometheus/prometheus.yaml    
+    logging:
+      driver: loki
+      options:
+        # loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-url: "http://172.22.22.221:3100/loki/api/v1/push"
+        loki-external-labels: "container_name={{.Name}},job=dockerlogs"
+    ports:
+      - "9090:9090"
+    networks:
+      loki-network:
+        ipv4_address: "172.22.22.222"
+
+volumes:
+  loki-data: {}
+  # prometheus-data: {}
