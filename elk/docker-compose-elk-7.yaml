@@ -21,7 +21,10 @@ services:
     volumes:
       - type: bind
         source: es-nht/
-        target: /usr/share/elasticsearch/data
+        target:  /var/lib/elasticsearch/data  
+        # Use this pathfor ES v8.0+
+        # target:  /usr/share/elasticsearch/data
+
     ports:
       - 9200:9200
       - 9300:9300
@@ -44,7 +47,8 @@ services:
     entrypoint: ["/bin/bash", "-c"]
 
     # Add a `sleep 3000 &&` for debugging -- remove it while running docker-compose
-    command: ["./bin/logstash -f custom-config/logstash/nht-demo.conf  --log.level debug | tee -a custom-config/logstash-logs.txt"]
+    command: ["while true; do sleep 900; done"]
+    # command: ["./bin/logstash -f custom-config/logstash/nht-demo.conf  --log.level debug | tee -a custom-config/logstash-logs.txt"]
 
   kibana:
     container_name: kibana
@@ -52,7 +56,7 @@ services:
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
-      - 5601:5601
+      - 9080:5601
     depends_on:
       - elasticsearch
     networks:
